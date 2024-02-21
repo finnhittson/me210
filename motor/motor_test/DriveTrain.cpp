@@ -12,7 +12,11 @@ DriveTrain::DriveTrain(
 	const Motor &rightMotor, 
 	int motorSpeed
 	) : leftMotor(leftMotor), rightMotor(rightMotor) {
-	speed = motorSpeed;
+	this->speed = motorSpeed;
+}
+
+void DriveTrain::setSpeed(int newSpeed) {
+	this->speed = newSpeed;
 }
 
 int DriveTrain::getSpeed() const {
@@ -20,7 +24,6 @@ int DriveTrain::getSpeed() const {
 }
 
 void DriveTrain::forwards(void) {
-	Serial.println("Driving forwards");
 	leftMotor.setSpeed(speed);
 	rightMotor.setSpeed(speed);
 	leftMotor.spinForwards();
@@ -28,7 +31,6 @@ void DriveTrain::forwards(void) {
 }
 
 void DriveTrain::backwards(void) {
-	Serial.println("Driving backwards");
 	leftMotor.setSpeed(speed);
 	rightMotor.setSpeed(speed);
 	leftMotor.spinBackwards();
@@ -50,17 +52,19 @@ void DriveTrain::rotateRight(void) {
 }
 
 void DriveTrain::leftMotorOff(void) {
-	leftMotor.setSpeed(0);
+	leftMotor.stop();
 }
 
 void DriveTrain::leftMotorOn(void) {
 	leftMotor.setSpeed(speed);
+	leftMotor.spinForwards();
 }
 
 void DriveTrain::rightMotorOff(void) {
-	rightMotor.setSpeed(0);
+	rightMotor.stop();
 }
 
 void DriveTrain::rightMotorOn(void) {
 	rightMotor.setSpeed(speed);
+	rightMotor.spinForwards();
 }

@@ -9,6 +9,7 @@ public:
 	DriveTrain();
 	DriveTrain(const Motor &leftMotor, const Motor &rightMotor, int speed);
 
+	void setSpeed(int newSpeed);
 	int getSpeed() const;
 
 	void forwards();

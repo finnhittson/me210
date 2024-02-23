@@ -1,3 +1,4 @@
+//max's test comment
 #define USE_TIMER_1     true
 
 #include <TimerInterrupt.h>

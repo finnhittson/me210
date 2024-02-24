@@ -11,14 +11,14 @@ const int enableA = 9;
 
 const int inB = 13;
 const int outB = 12;
-const int enableB = 10;
-
+const int enableB = 11;
 int duty = 200; // 0 - 255
-bool driveForwards = true;
 
-Motor LeftMotor(inA, outA, enableA);
-Motor RightMotor(inB, outB, enableB);
-DriveTrain FullDriveTrain(LeftMotor, RightMotor, duty);
+Motor leftMotor(inA, outA, enableA, duty);
+Motor rightMotor(inB, outB, enableB, duty);
+DriveTrain driveTrain(leftMotor, rightMotor, duty);
+
+int freq = 1;
 
 void setup() {
 	Serial.begin(9600);
@@ -32,26 +32,18 @@ void setup() {
 	pinMode(inB, OUTPUT);
 	pinMode(outB, OUTPUT);
 	pinMode(enableB, OUTPUT);
+
+	ITimer1.init();
+	if (ITimer1.attachInterrupt(freq, TimerHandler))
+		Serial.println("Starting  ITimer1 OK, millis() = " + String(millis()));
+	else
+		Serial.println("Can't set ITimer1. Select another freq. or timer");
 }
 
 void loop() {
-	analogWrite(enableB, duty);
-	digitalWrite(inB, HIGH);
-	digitalWrite(outB, LOW);
+	//driveTrain.forwards();
 }
 
-// int delayTime = 1000;
-// FullDriveTrain.forwards();
-// delay(delayTime);
-// FullDriveTrain.backwards();
-// delay(delayTime);
-// FullDriveTrain.rotateLeft();
-// delay(delayTime);
-// FullDriveTrain.rotateRight();
-// delay(delayTime);
-// FullDriveTrain.rightMotorOn();
-// FullDriveTrain.leftMotorOff();
-// delay(delayTime);
-// FullDriveTrain.rightMotorOff();
-// FullDriveTrain.leftMotorOn();
-// delay(delayTime);
+void TimerHandler(void) {
+	Serial.println("HERE");
+}

@@ -3,10 +3,6 @@
 
 class Motor {
 public:
-	int in;
-	int out;
-	int enable;
-
 	Motor();
 	Motor(const int in, const int out, const int enable);
 	Motor(const int in, const int out, const int enable, const int speed);
@@ -15,11 +11,14 @@ public:
 	int getSpeed(void) const;
 
 	void stop();
-	void spinForwards();
-	void spinBackwards();
+	void forwards();
+	void backwards();
 
 private:
-	 int speed = 0;
+	int in;
+	int out;
+	int enable;
+	int speed = 0;
 };
 
 #endif // MOTOR_H

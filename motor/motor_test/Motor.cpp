@@ -6,17 +6,12 @@ Motor::Motor() {
 	// empty constructor
 }
 
-Motor::Motor(const int in, const int out, const int enable) {
-	this->in = in;
-	this->out = out;
-	this->enable = enable;
+Motor::Motor(const int in, const int out, const int enable) : in(in), out(out), enable(enable){
+	// empty
 }
 
-Motor::Motor(const int in, const int out, const int enable, const int speed) {
-	this->in = in;
-	this->out = out;
-	this->enable = enable;
-	this->speed = speed;
+Motor::Motor(const int in, const int out, const int enable, const int speed) : in(in), out(out), enable(enable), speed(speed){
+	// empty
 }
 
 void Motor::setSpeed(int speed) {
@@ -28,16 +23,18 @@ int Motor::getSpeed(void) const {
 }
 
 void Motor::stop(void) {
-	analogWrite(in, 0);
-	analogWrite(out, 0);
+	digitalWrite(in, LOW);
+	digitalWrite(out, LOW);
 }
 
-void Motor::spinForwards(void) {
-	analogWrite(in, speed);
-	analogWrite(out, 0);
+void Motor::forwards(void) {
+	analogWrite(enable, speed);
+	digitalWrite(in, HIGH);
+	digitalWrite(out, LOW);
 }
 
-void Motor::spinBackwards(void) {
-	analogWrite(in, 0);
-	analogWrite(out, speed);
+void Motor::backwards(void) {
+	analogWrite(enable, speed);
+	digitalWrite(in, LOW);
+	digitalWrite(out, HIGH);
 }

@@ -26,29 +26,29 @@ int DriveTrain::getSpeed() const {
 void DriveTrain::forwards(void) {
 	leftMotor.setSpeed(speed);
 	rightMotor.setSpeed(speed);
-	leftMotor.spinForwards();
-	rightMotor.spinForwards();
+	leftMotor.forwards();
+	rightMotor.forwards();
 }
 
 void DriveTrain::backwards(void) {
 	leftMotor.setSpeed(speed);
 	rightMotor.setSpeed(speed);
-	leftMotor.spinBackwards();
-	rightMotor.spinBackwards();
+	leftMotor.backwards();
+	rightMotor.backwards();
 }
 
 void DriveTrain::rotateLeft(void) {
 	leftMotor.setSpeed(speed);
 	rightMotor.setSpeed(speed);
-	leftMotor.spinBackwards();
-	rightMotor.spinForwards();
+	leftMotor.backwards();
+	rightMotor.forwards();
 }
 
 void DriveTrain::rotateRight(void) {
 	leftMotor.setSpeed(speed);
 	rightMotor.setSpeed(speed);
-	leftMotor.spinForwards();
-	rightMotor.spinBackwards();
+	leftMotor.forwards();
+	rightMotor.backwards();
 }
 
 void DriveTrain::leftMotorOff(void) {
@@ -57,7 +57,7 @@ void DriveTrain::leftMotorOff(void) {
 
 void DriveTrain::leftMotorOn(void) {
 	leftMotor.setSpeed(speed);
-	leftMotor.spinForwards();
+	leftMotor.forwards();
 }
 
 void DriveTrain::rightMotorOff(void) {
@@ -66,5 +66,5 @@ void DriveTrain::rightMotorOff(void) {
 
 void DriveTrain::rightMotorOn(void) {
 	rightMotor.setSpeed(speed);
-	rightMotor.spinForwards();
+	rightMotor.forwards();
 }

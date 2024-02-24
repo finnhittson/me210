@@ -16,6 +16,7 @@ public:
 	void backwards();
 	void rotateLeft();
 	void rotateRight();
+	void stop();
 
 	void leftMotorOff();
 	void leftMotorOn();

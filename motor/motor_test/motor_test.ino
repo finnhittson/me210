@@ -5,45 +5,53 @@
 #include "Motor.h"
 #include "DriveTrain.h"
 
-const int leftMotorPin1 = 9;
-const int leftMotorPin2 = 10;
+const int inA = 8;
+const int outA = 7;
+const int enableA = 9;
 
-const int rightMotorPin1 = 5;
-const int rightMotorPin2 = 6;
-const int potPin = A0;
+const int inB = 13;
+const int outB = 12;
+const int enableB = 10;
 
-int speed = 100;
+int duty = 200; // 0 - 255
 bool driveForwards = true;
 
-Motor LeftMotor(leftMotorPin1, leftMotorPin2);
-Motor RightMotor(rightMotorPin1, rightMotorPin2);
-DriveTrain FullDriveTrain(LeftMotor, RightMotor, speed);
+Motor LeftMotor(inA, outA, enableA);
+Motor RightMotor(inB, outB, enableB);
+DriveTrain FullDriveTrain(LeftMotor, RightMotor, duty);
 
 void setup() {
 	Serial.begin(9600);
 
 	// pinout for left motor
-	pinMode(leftMotorPin1, OUTPUT);
-	pinMode(leftMotorPin2, OUTPUT);
+	pinMode(inA, OUTPUT);
+	pinMode(outA, OUTPUT);
+	pinMode(enableA, OUTPUT);
 
 	// pinout for right motor
-	pinMode(rightMotorPin1, OUTPUT);
-	pinMode(rightMotorPin2, OUTPUT);
+	pinMode(inB, OUTPUT);
+	pinMode(outB, OUTPUT);
+	pinMode(enableB, OUTPUT);
 }
 
 void loop() {
-	FullDriveTrain.forwards();
-	delay(2000);
-	FullDriveTrain.backwards();
-	delay(2000);
-	FullDriveTrain.rotateLeft();
-	delay(2000);
-	FullDriveTrain.rotateRight();
-	delay(2000);
-	FullDriveTrain.rightMotorOn();
-	FullDriveTrain.leftMotorOff();
-	delay(2000);
-	FullDriveTrain.rightMotorOff();
-	FullDriveTrain.leftMotorOn();
-	delay(2000);
+	analogWrite(enableB, duty);
+	digitalWrite(inB, HIGH);
+	digitalWrite(outB, LOW);
 }
+
+// int delayTime = 1000;
+// FullDriveTrain.forwards();
+// delay(delayTime);
+// FullDriveTrain.backwards();
+// delay(delayTime);
+// FullDriveTrain.rotateLeft();
+// delay(delayTime);
+// FullDriveTrain.rotateRight();
+// delay(delayTime);
+// FullDriveTrain.rightMotorOn();
+// FullDriveTrain.leftMotorOff();
+// delay(delayTime);
+// FullDriveTrain.rightMotorOff();
+// FullDriveTrain.leftMotorOn();
+// delay(delayTime);

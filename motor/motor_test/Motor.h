@@ -3,12 +3,13 @@
 
 class Motor {
 public:
-	int motorPin1;
-	int motorPin2;
+	int in;
+	int out;
+	int enable;
 
 	Motor();
-	Motor(const int mp1, const int mp2);
-	Motor(const int mp1, const int mp2, const int speed);
+	Motor(const int in, const int out, const int enable);
+	Motor(const int in, const int out, const int enable, const int speed);
 
 	void setSpeed(int speed);
 	int getSpeed(void) const;

@@ -54,16 +54,19 @@ void DriveTrain::rotateRight(void) {
 void DriveTrain::rotate90Right() {
 	leftMotorOn();
 	delay(5000);
+  leftMotorOff();
 }
 
 void DriveTrain::rotate90Left() {
 	rightMotorOn();
 	delay(5000);
+  leftMotorOff();
 }
 
 void DriveTrain::rotate180() {
 	rightMotorOn();
 	delay(100000);
+  rightMotorOff();
 }
 
 void DriveTrain::leftMotorOff(void) {
@@ -82,4 +85,9 @@ void DriveTrain::rightMotorOff(void) {
 void DriveTrain::rightMotorOn(void) {
 	rightMotor.setSpeed(speed);
 	rightMotor.forwards();
+}
+
+void DriveTrain::stop(void) {
+  rightMotor.stop();
+  leftMotor.stop();
 }

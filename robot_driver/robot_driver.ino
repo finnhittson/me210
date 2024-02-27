@@ -12,7 +12,7 @@ const int outLeft = 7;
 const int enable = 9;
 const int inRight = 13;
 const int outRight = 12;
-int duty = 200;  // 0 - 255
+int duty = 100;  // 0 - 255
 Motor leftMotor(inLeft, outLeft, enable, duty);
 Motor rightMotor(inRight, outRight, enable, duty);
 DriveTrain driveTrain(leftMotor, rightMotor, duty);
@@ -20,7 +20,7 @@ DriveTrain driveTrain(leftMotor, rightMotor, duty);
 // line sensor definitions
 const int leftSensorPin = A0;
 const int rightSensorPin = A1;
-const int threshold = 20;
+const int threshold = 80;
 LineSensor leftSensor(threshold, leftSensorPin);
 LineSensor rightSensor(threshold, rightSensorPin);
 
@@ -72,5 +72,33 @@ void setup() {
 
 void loop() {
   // analogWrite(enable, duty);
-  driveTrain.forwards();
+//  driveTrain.forwards();
+//  driveTrain.backwards();
+//  driveTrain.rotateLeft();
+//  driveTrain.rotateRight();
+//  driveTrain.rotate90Right();
+//  driveTrain.rotate90Left();
+//  driveTrain.rotate180();
+
+//  leftMotor.forwards();
+//  delay(1000);
+//  leftMotor.stop();
+//  rightMotor.forwards();
+//  delay(1000);
+//  rightMotor.stop();
+
+//  driveTrain.forwards();
+//  delay(1000);
+//  driveTrain.stop();
+//  delay(3000);
+
+//    Serial.println(analogRead(leftSensorPin));
+//    Serial.println(analogRead(rightSensorPin));
+//    Serial.println();
+//    delay(1000);
+
+    Serial.println(leftSensor.status());
+    Serial.println(rightSensor.status());
+    Serial.println();
+    delay(1000);
 }

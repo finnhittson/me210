@@ -1,4 +1,6 @@
 #include "Ultrasonic.h"
+#include "Arduino.h"
+using namespace std;
 
 //Ultrasonic *Ultrasonic::_instance=NULL;
 Ultrasonic *Ultrasonic::_instance(NULL);
@@ -23,8 +25,8 @@ void Ultrasonic::start(){
   digitalWrite(_trigger, LOW);  
 }
 
-unsigned int Ultrasonic::getRange(bool units){
-  return (_end-_start)/((units)?58:148);
+float Ultrasonic::getRange(bool units){
+  return (_end-_start)/((units)?58.0:148.0);
 }
 
 void Ultrasonic::_echo_isr(){

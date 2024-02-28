@@ -6,6 +6,8 @@
 #define CM true
 #define INCH false
 
+/* https://www.instructables.com/Non-blocking-Ultrasonic-Sensor-for-Arduino/ */
+
 class Ultrasonic {
   public:
     Ultrasonic(int trigger, int echo, int interrupt, int max_dist=200);
@@ -13,7 +15,7 @@ class Ultrasonic {
     void begin();
     void start();
     bool isFinished(){ return _finished; }
-    unsigned int getRange(bool units=CM);
+    float getRange(bool units=CM);
     static Ultrasonic* instance(){ return _instance; }
     
   private:

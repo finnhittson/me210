@@ -37,17 +37,20 @@ LineSensor leftSensor(threshold, leftSensorPin);
 LineSensor rightSensor(threshold, rightSensorPin);
 
 // line following definition
-LineFollowing lineFollow(leftSensor, rightSensor, driveTrain);
+LineFollowing lineFollow(leftSensor, rightSensor, driveTrain, uF);
 
 // mode swtich
 const int modePin = A5;
 
-int orientOnce = 1;
+int notOriented = 1;
 int oriented = 0;
 int doLineFollowing = 0;
 int firstTeeDetected = 0;
 int secondTeeDetected = 0;
 int findLine = 0;
+int foundFrontWall = 0;
+int rotate90 = 0;
+int driveStraight = 0;
 
 // motor + ultrasonic vars
 bool keepDriving = true;
@@ -60,7 +63,8 @@ float dist1;
 float dist2;
 float distF; 
 
-bool AtFrontWall(HCSR04 uF, float thresh);
+//bool AtFrontWall(float thresh=3.0);
+bool AtFrontWall(const HCSR04& frontSensor, float thresh=3.0);
 
 void setup() {
 	Serial.begin(9600);
@@ -94,8 +98,9 @@ void setup() {
 void loop() {
 
 	// orient outwards away from walls
-	if (!orientOnce) {
-		orientOnce = TestStartZone();
+	if (notOriented) {
+    Serial.println("HERE");
+		notOriented = TestStartZone();
 		oriented = 1;
 		Serial.println("\nOriented outwards.");
 		delay(1000);
@@ -144,17 +149,39 @@ void loop() {
 		delay(1000);
 		findLine = 1;
 		Serial.println("second tee crossed.");
+    secondTeeDetected = 0;
 	}
 
 	if (findLine) {
-		findLine = lineFollow.findLine(digitalRead(modePin));
-		Serial.println("found next line.");
-		lineFollow.followLine();
+    findLine = lineFollow.findLine(digitalRead(modePin));
+    Serial.println("found next line.");
+    lineFollow.followLine();
+    rotate90 = 1;
 	}
-	Serial.println(AtFrontWall(uF, 3.0));
-	if (!AtFrontWall(uF, 3.0))
-		driveTrain.forwards();
 
+  if (rotate90) {
+    if (digitalRead(modePin)) {
+      driveTrain.rotate90Left(); }
+    else
+      driveTrain.rotate90Right();
+    rotate90 = 0;
+    driveStraight = 1;
+  }
+
+  if (driveStraight) {
+    lineFollow.followLine();
+    driveStraight = 0;
+  }
+
+//	if (!foundFrontWall) {
+//		if (!AtFrontWall(uF))
+//			driveTrain.forwards();
+//		else {
+//			driveTrain.stop();
+//			foundFrontWall = 1;
+//		}	
+//	}
+	
 
 	// // test line sensors
 	// Serial.print("Left sensor: ");
@@ -179,7 +206,7 @@ int TestStartZone() {
 		if (!keepDriving) {
 			driveTrain.stop();
 			run = false;
-			return 1;
+			return 0;
 		}
 		else {
 			if (distF > farThresh) {
@@ -218,16 +245,9 @@ int TestStartZone() {
 					keepDriving = false;
 				}
 			}
-
 			if (millis() - lastTime < 60) {
 				delay(millis() - lastTime);
 			}
 		}
 	}
-}
-
-bool AtFrontWall(HCSR04 uF, float thresh=3.0) {
-	int d = uF.dist();
-	if (d > thresh) return false;
-	else return true;
 }

@@ -2,13 +2,15 @@
 #include "LineFollowing.h"
 #include "LineSensor.h"
 #include "DriveTrain.h"
+#include <HCSR04.h>
 using namespace std;
 
 LineFollowing::LineFollowing(
 	const LineSensor &leftSensor, 
 	const LineSensor &rightSensor, 
-	const DriveTrain &driveTrain
-) : leftSensor(leftSensor), rightSensor(rightSensor), driveTrain(driveTrain) {
+	const DriveTrain &driveTrain,
+  const HCSR04 &uF
+) : leftSensor(leftSensor), rightSensor(rightSensor), driveTrain(driveTrain), uF(uF) {
 	// empty constructor
 }
 
@@ -37,7 +39,12 @@ int LineFollowing::followLine(void) {
 			currentSensor = 1;
 			run = rapidSwitching();
 		} else if (leftSensor.status() && rightSensor.status()){
+      Serial.println("Found tee.");
 			run = false;
+		} else if (AtFrontWall(uF)){
+      Serial.println("Found wall.");
+      Serial.println(uF.dist());
+		  run = false;
 		} else {
 			driveTrain.forwards();
 			rapidSwitchCount = 0;
@@ -90,4 +97,18 @@ int LineFollowing::findLine(int mode) {
 	return 0;
 }
 
-
+bool LineFollowing::AtFrontWall(const HCSR04& uF, float thresh) {
+  if (micros() - lastTime < cycleDur) {  // wait for recommended measurement cycle
+    return false;
+  }
+  else {  // send trigger next
+    lastTime = micros();
+    float d = uF.dist();
+    //  Serial.println(d);
+    if (d > 3.0) 
+      return false;
+    else 
+      return true;
+  }
+  
+}

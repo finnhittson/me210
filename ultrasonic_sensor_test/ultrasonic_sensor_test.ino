@@ -3,6 +3,8 @@
 //#include "Ultrasonic.h"
 #include <HCSR04.h>
 
+const int modePin = A5;
+
 // ultrasonic definitions
 const int trigPin1 = 2;   // LEFT
 const int echoPin1 = 3;
@@ -55,6 +57,11 @@ float hiThresh = 800.0;     // [in] when <1" away from sensor
 float farThresh = 40.0;     // [cm]
 unsigned int countGood = 0;
 
+// wall hugging vars
+float wallThreshMin = 4.0;     // [cm]
+float wallThreshMax = 10.0;     // [cm]
+float frontWallThresh = 3.0;   // [cm]
+
 void setup() {
 	Serial.begin(9600);
 	pinMode(trigPin1, OUTPUT);
@@ -68,9 +75,13 @@ void setup() {
   pinMode(outLeft, OUTPUT);
   pinMode(enable, OUTPUT);
 
+  pinMode(modePin, INPUT_PULLUP);
+
   lastTime = micros();
   digitalWrite(trigPin1, LOW);  // no trigger signal
   digitalWrite(trigPin2, LOW);  // no trigger signal
+
+  Serial.println(digitalRead(modePin));
 }
 
 void loop() {
@@ -79,7 +90,52 @@ void loop() {
 //  Working();
 //  BlockingExample();
 //  driveTrain.forwards();
-  TestStartZone();
+//  TestStartZone();
+ GoTilFrontWall();
+  // HugWall();
+}
+
+void HugWall() {
+  if (digitalRead(modePin)) { // LEFT FIELD => HUG RIGHT WALL
+    dist2 = uR.dist();
+    Serial.println(dist2);
+    if (dist2 > wallThreshMax) {
+            driveTrain.rotateLeft();
+//      Serial.println("left");
+    }
+    else if (dist2 < wallThreshMin) {
+      driveTrain.rotateRight();
+      Serial.println("right");
+    }
+    else {
+      driveTrain.forwards();
+      Serial.println("forwards");
+    }
+  }
+  else { // RIGHT FIELD => HUG LEFT WALL
+    dist1 = uL.dist();
+    if (dist1 > wallThreshMax) {
+      driveTrain.rotateLeft();
+    }
+    if (dist1 < wallThreshMin) {
+      driveTrain.rotateRight();
+    }
+    else {
+      driveTrain.forwards();
+    }
+  }
+}
+
+void GoTilFrontWall() {
+  /* Drive forward until stop at front wall*/
+  distF = uF.dist();
+  Serial.println(distF);
+  if (distF > frontWallThresh) {
+    driveTrain.forwards();
+  }
+  else {
+    driveTrain.stop();
+  }
 }
 
 void TestStartZone() {

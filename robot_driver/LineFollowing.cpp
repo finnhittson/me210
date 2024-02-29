@@ -16,7 +16,6 @@ bool LineFollowing::rapidSwitching() {
 	int rapidSwitchTime = 100;
 	if (millis() - prevSwitchTime < rapidSwitchTime && prevSensor != currentSensor) {
 		rapidSwitchCount++;
-		Serial.println(rapidSwitchCount);
 	}
 	if (rapidSwitchCount >= 10) {
 		return false;
@@ -47,52 +46,48 @@ int LineFollowing::followLine(void) {
 		}
 	}
 	driveTrain.stop();
-	return 1;
+	return 0;
 }
 
-int LineFollowing::findLine(int mode) {
+int LineFollowing::findLine(int mode) {	
+	// find a line
 	bool run = true;
-	int rotateTime = 1500;
 	while (run) {
 		driveTrain.forwards();
-		if (rightSensor.status()) {
-			Serial.println("right sensor triggered");
+		if (rightSensor.status() || leftSensor.status()) {
 			driveTrain.stop();
-			run = false;
-		}
-		if (leftSensor.status()) {
-			Serial.println("left sensor triggered");
-			driveTrain.stop();
+			delay(1000);
 			run = false;
 		}
 	}
+	// rotate perpendicular to it
 	if (rightSensor.status()) {
-		Serial.println("right sensor triggered");
+		// Serial.println("right sensor triggered");
 		while (!leftSensor.status())
 			driveTrain.leftMotorOn();
-		if (mode) {
-			driveTrain.rotateRight();
-			delay(rotateTime);
-		}
-		else {
-			driveTrain.rotateLeft();
-			delay(rotateTime);
-		}
 	} else if (leftSensor.status()) {
-		Serial.println("left sensor triggered");
+		// Serial.println("left sensor triggered");
 		while (!rightSensor.status())
 			driveTrain.rightMotorOn();
-		if (mode) {
-			driveTrain.rotateRight();
-			delay(rotateTime);
-		}
-		else {
-			driveTrain.rotateLeft();
-			delay(rotateTime);
-		}
+	}
+
+	// rotate onto it depending on mode
+	int driveTime = 100;
+	int rotateTime = 1500;
+	if (mode) {
+		// driveTrain.forwards();
+		// delay(driveTime);
+		driveTrain.rotateRight();
+		delay(rotateTime);
+	}
+	else {
+		// driveTrain.forwards();
+		// delay(driveTime);
+		driveTrain.rotateLeft();
+		delay(rotateTime);
 	}
 	driveTrain.stop();
-	return 1;
+	return 0;
 }
 
 

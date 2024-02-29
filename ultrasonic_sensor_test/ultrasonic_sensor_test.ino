@@ -55,12 +55,12 @@ bool findCorner = false;
 float loThresh = 3.0;       // [cm]
 float hiThresh = 800.0;     // [in] when <1" away from sensor
 float farThresh = 40.0;     // [cm]
-unsigned int countGood = 0;
 
 // wall hugging vars
 float wallThreshMin = 4.0;     // [cm]
 float wallThreshMax = 10.0;     // [cm]
 float frontWallThresh = 3.0;   // [cm]
+float lastDist;
 
 void setup() {
 	Serial.begin(9600);
@@ -76,12 +76,11 @@ void setup() {
   pinMode(enable, OUTPUT);
 
   pinMode(modePin, INPUT_PULLUP);
+  Serial.println(digitalRead(modePin));   // read what field we're on
 
   lastTime = micros();
   digitalWrite(trigPin1, LOW);  // no trigger signal
-  digitalWrite(trigPin2, LOW);  // no trigger signal
-
-  Serial.println(digitalRead(modePin));
+  digitalWrite(trigPin2, LOW);  // no trigger signal  
 }
 
 void loop() {
@@ -90,27 +89,35 @@ void loop() {
 //  Working();
 //  BlockingExample();
 //  driveTrain.forwards();
-//  TestStartZone();
- GoTilFrontWall();
-  // HugWall();
+  TestStartZone();
+// GoTilFrontWall();
+//   HugWall();
 }
 
 void HugWall() {
   if (digitalRead(modePin)) { // LEFT FIELD => HUG RIGHT WALL
     dist2 = uR.dist();
     Serial.println(dist2);
+
     if (dist2 > wallThreshMax) {
-            driveTrain.rotateLeft();
-//      Serial.println("left");
+      driveTrain.rotateLeft();
+      delay(100);
+      driveTrain.forwards();
+
+      Serial.println("left");
     }
     else if (dist2 < wallThreshMin) {
       driveTrain.rotateRight();
+      delay(100);
+      driveTrain.forwards();
+
       Serial.println("right");
     }
-    else {
+    // else {
       driveTrain.forwards();
+      delay(100);
       Serial.println("forwards");
-    }
+    // }
   }
   else { // RIGHT FIELD => HUG LEFT WALL
     dist1 = uL.dist();
@@ -156,7 +163,6 @@ void TestStartZone() {
 
   if (!keepDriving) {
     driveTrain.stop();
-    countGood = 0;
   }
   else {
     if (distF > farThresh) {
@@ -196,10 +202,7 @@ void TestStartZone() {
       else {
         driveTrain.stop();
         Serial.println("good stop");
-        countGood++;
-        if (countGood > 2) {
           keepDriving = false;
-        }
       }
     }
   

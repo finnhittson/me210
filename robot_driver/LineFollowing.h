@@ -6,9 +6,15 @@
 
 class LineFollowing {
 public:
+	long double prevSwitchTime;
+	int rapidSwitchCount = 0;
+	int prevSensor = -1;
+	int currentSensor = -1;
 	LineFollowing(const LineSensor &leftSensor, const LineSensor &rightSensor, const DriveTrain &driveTrain);
 
-	void followLine(void);
+	bool rapidSwitching();
+	int followLine();
+	int findLine(int mode);
 
 private:
 	LineSensor leftSensor;

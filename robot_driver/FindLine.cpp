@@ -37,6 +37,9 @@ bool FindLine::detectedBarrier() {
 
 void FindLine::driveState() {
 	driveTrain.forwards();
+	delay(delayTime);
+	driveTrain.stop();
+	delay(delayTime);
 	if (detectedBarrier())
 		state = ROTATE90;
 	else if (leftSensor.status())
@@ -56,14 +59,22 @@ void FindLine::rotate90State() {
 }
 
 void FindLine::rotateLeftState() {
+	driveTrain.rotate90Left();
+	delay(delayTime);
+	driveTrain.stop();
+	delay(delayTime);
 	while (leftSensor.status() || !rightSensor.status())
-		driveTrain.rotateLeft();
+		driveTrain.rightMotorOn();
 	state = LINEFOLLOWING;
 }
 
 void FindLine::rotateRightState() {
+	driveTrain.rotate90Right();
+	delay(delayTime);
+	driveTrain.stop();
+	delay(delayTime);
 	while (!leftSensor.status() || rightSensor.status())
-		driveTrain.rotateRight();
+		driveTrain.leftMotorOn();
 	state = LINEFOLLOWING;
 }
 

@@ -3,6 +3,7 @@
 
 class Motor {
 public:
+	bool kickStart = true;
 	Motor();
 	Motor(const int in, const int out, const int enable);
 	Motor(const int in, const int out, const int enable, const int speed);

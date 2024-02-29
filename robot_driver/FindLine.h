@@ -16,6 +16,7 @@ public:
 	};
 	State state = DRIVE;
 	int sensor = -1;
+	int delayTime = 70;
 
 	FindLine(
 		const DriveTrain &driveTrain, 

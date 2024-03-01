@@ -4,6 +4,7 @@
 #include "LineFollowing.h"
 #include "LimitSwitch.h"
 #include "FindLine.h"
+#include "HugWall.h"
 #include <HCSR04.h>
 
 // ultrasonic definitions
@@ -42,7 +43,7 @@ LineFollowing lineFollow(leftSensor, rightSensor, driveTrain, uF);
 // mode swtich
 const int modePin = A5;
 
-int notOriented = 1;
+int notOriented = 0;
 int oriented = 0;
 int doLineFollowing = 0;
 int firstTeeDetected = 0;
@@ -50,7 +51,7 @@ int secondTeeDetected = 0;
 int findLine = 0;
 int foundFrontWall = 0;
 int rotate90 = 0;
-int driveStraight = 0;
+int doHugWall = 1;
 
 // motor + ultrasonic vars
 bool keepDriving = true;
@@ -65,6 +66,7 @@ float distF;
 
 //bool AtFrontWall(float thresh=3.0);
 bool AtFrontWall(const HCSR04& frontSensor, float thresh=3.0);
+HugWall hugWall(driveTrain, uF, uL, uR, lineFollow); 
 
 void setup() {
 	Serial.begin(9600);
@@ -165,12 +167,12 @@ void loop() {
     else
       driveTrain.rotate90Right();
     rotate90 = 0;
-    driveStraight = 1;
+    doHugWall = 1;
   }
 
-  if (driveStraight) {
-    lineFollow.followLine();
-    driveStraight = 0;
+  if (doHugWall) {
+	hugWall.DoHugWalling(digitalRead(modePin));
+	doHugWall = 0;
   }
 
 //	if (!foundFrontWall) {
@@ -251,3 +253,4 @@ int TestStartZone() {
 		}
 	}
 }
+

@@ -7,10 +7,10 @@ using namespace std;
 class DriveTrain{
 public:
 	DriveTrain();
-	DriveTrain(const Motor &leftMotor, const Motor &rightMotor, int speed);
+	DriveTrain(const Motor &leftMotor, const Motor &rightMotor, int dutyLeft, int dutyRight);
 
-	void setSpeed(int newSpeed);
-	int getSpeed() const;
+	void setLeftDuty(int newLeftDuty);
+	void setRightDuty(int newRightDuty);
 
 	void forwards();
 	void backwards();
@@ -29,7 +29,8 @@ public:
 private:
 	Motor leftMotor;
 	Motor rightMotor;
-	int speed;
+	int dutyLeft;
+	int dutyRight;
 };
 
 #endif // MOTOR_H

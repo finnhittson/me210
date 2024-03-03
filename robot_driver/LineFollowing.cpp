@@ -39,12 +39,12 @@ int LineFollowing::followLine(void) {
 			currentSensor = 1;
 			run = rapidSwitching();
 		} else if (leftSensor.status() && rightSensor.status()){
-      Serial.println("Found tee.");
+      		// Serial.println("Found tee.");
 			run = false;
 		} else if (AtFrontWall(uF)){
-      Serial.println("Found wall.");
-      Serial.println(uF.dist());
-		  run = false;
+      		// Serial.println("Found wall.");
+     		// Serial.println(uF.dist());
+		  	run = false;
 		} else {
 			driveTrain.forwards();
 			rapidSwitchCount = 0;
@@ -67,17 +67,20 @@ int LineFollowing::findLine(int mode) {
 			run = false;
 		}
 	}
+	driveTrain.stop();
+	// Serial.println("detected line");
+	delay(1000);
 	// rotate perpendicular to it
 	if (rightSensor.status()) {
-		// Serial.println("right sensor triggered");
 		while (!leftSensor.status())
 			driveTrain.leftMotorOn();
 	} else if (leftSensor.status()) {
-		// Serial.println("left sensor triggered");
 		while (!rightSensor.status())
 			driveTrain.rightMotorOn();
 	}
-
+	driveTrain.stop();
+	// Serial.println("oriented to line");
+	delay(1000);
 	// rotate onto it depending on mode
 	int driveTime = 100;
 	int rotateTime = 1500;

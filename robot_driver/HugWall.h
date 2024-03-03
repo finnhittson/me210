@@ -9,7 +9,9 @@
 class HugWall {
 public:
 	HugWall(const DriveTrain& driveTrain, const HCSR04& uFront, const HCSR04& uLeft, const HCSR04& uRight, const LineFollowing& lineFollower);
+
 	void DoHugWalling(int mode);
+	void alternativeWallHugging(int mode);
 
 private:
 	DriveTrain driveTrain;

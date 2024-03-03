@@ -29,27 +29,13 @@ void Motor::stop(void) {
 }
 
 void Motor::forwards(void) {
-	if (kickStart) {
-		analogWrite(enable, speed);
-		digitalWrite(in, HIGH);
-		digitalWrite(out, LOW);
-		kickStart = false;
-		delay(300);
-	}
-	analogWrite(enable, speed - 30);
+	analogWrite(enable, speed);
 	digitalWrite(in, HIGH);
 	digitalWrite(out, LOW);
 }
 
 void Motor::backwards(void) {
-	if (kickStart) {
-		analogWrite(enable, speed);
-		digitalWrite(in, LOW);
-		digitalWrite(out, HIGH);
-		kickStart = false;
-		delay(300);
-	}
-	analogWrite(enable, speed - 30);
+	analogWrite(enable, speed);
 	digitalWrite(in, LOW);
 	digitalWrite(out, HIGH);
 }

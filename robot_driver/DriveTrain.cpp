@@ -10,56 +10,58 @@ DriveTrain::DriveTrain() {
 DriveTrain::DriveTrain(
 	const Motor &leftMotor, 
 	const Motor &rightMotor, 
-	int motorSpeed
+	int dutyLeft,
+	int dutyRight
 	) : leftMotor(leftMotor), rightMotor(rightMotor) {
-	this->speed = motorSpeed;
+	this->dutyLeft = dutyLeft;
+	this->dutyRight = dutyRight;
 }
 
-void DriveTrain::setSpeed(int newSpeed) {
-	this->speed = newSpeed;
+void DriveTrain::setLeftDuty(int newLeftDuty) {
+	this->dutyLeft = newLeftDuty;
 }
 
-int DriveTrain::getSpeed() const {
-	return speed;
+void DriveTrain::setRightDuty(int newRightDuty) {
+	this->dutyRight = newRightDuty;
 }
 
 void DriveTrain::forwards(void) {
-	leftMotor.setSpeed(speed);
-	rightMotor.setSpeed(speed);
+	leftMotor.setSpeed(dutyLeft);
+	rightMotor.setSpeed(dutyRight);
 	leftMotor.forwards();
 	rightMotor.forwards();
 }
 
 void DriveTrain::backwards(void) {
-	leftMotor.setSpeed(speed);
-	rightMotor.setSpeed(speed);
+	leftMotor.setSpeed(dutyLeft);
+	rightMotor.setSpeed(dutyRight);
 	leftMotor.backwards();
 	rightMotor.backwards();
 }
 
 void DriveTrain::rotateLeft(void) {
-	leftMotor.setSpeed(speed);
-	rightMotor.setSpeed(speed);
+	leftMotor.setSpeed(dutyLeft);
+	rightMotor.setSpeed(dutyRight);
 	leftMotor.backwards();
 	rightMotor.forwards();
 }
 
 void DriveTrain::rotateRight(void) {
-	leftMotor.setSpeed(speed);
-	rightMotor.setSpeed(speed);
+	leftMotor.setSpeed(dutyLeft);
+	rightMotor.setSpeed(dutyRight);
 	leftMotor.forwards();
 	rightMotor.backwards();
 }
 
 void DriveTrain::rotate90Right() {
 	rotateRight();
-	delay(2500);
+	// delay(2200); for matching duty of 80
 	stop();
 }
 
 void DriveTrain::rotate90Left() {
 	rotateLeft();
-	delay(2500);
+	// delay(2200);
 	stop();
 }
 
@@ -79,7 +81,7 @@ void DriveTrain::leftMotorOff(void) {
 }
 
 void DriveTrain::leftMotorOn(void) {
-	leftMotor.setSpeed(speed);
+	leftMotor.setSpeed(dutyLeft);
 	leftMotor.forwards();
 }
 
@@ -88,6 +90,6 @@ void DriveTrain::rightMotorOff(void) {
 }
 
 void DriveTrain::rightMotorOn(void) {
-	rightMotor.setSpeed(speed);
+	rightMotor.setSpeed(dutyRight);
 	rightMotor.forwards();
 }

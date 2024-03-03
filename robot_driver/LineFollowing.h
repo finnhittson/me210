@@ -12,20 +12,21 @@ public:
 	int rapidSwitchCount = 0;
 	int prevSensor = -1;
 	int currentSensor = -1;
-  unsigned long cycleDur = 60000;    // [micros] sensing cycle >60ms
-  unsigned long lastTime = micros();
+  	unsigned long cycleDur = 60000;    // [micros] sensing cycle >60ms
+  	unsigned long lastTime = micros();
 	LineFollowing(const LineSensor &leftSensor, const LineSensor &rightSensor, const DriveTrain &driveTrain, const HCSR04 &uF);
 
 	bool rapidSwitching();
 	int followLine();
 	int findLine(int mode);
-  bool AtFrontWall(const HCSR04 &uF, float thresh = 3.0);
+  	bool AtFrontWall(const HCSR04 &uF, float thresh = 3.0);
+  	int findTeeBackwards();
 
 private:
 	LineSensor leftSensor;
 	LineSensor rightSensor;
 	DriveTrain driveTrain;
-  HCSR04 uF;
+  	HCSR04 uF;
 };
 
 #endif // LINEFOLLOWING_H

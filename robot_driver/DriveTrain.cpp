@@ -55,19 +55,15 @@ void DriveTrain::rotateRight(void) {
 
 void DriveTrain::rotate90Right() {
 	rotateRight();
+	delay(2000);
 	// delay(2200); for matching duty of 80
 	stop();
 }
 
 void DriveTrain::rotate90Left() {
 	rotateLeft();
+	delay(1900);
 	// delay(2200);
-	stop();
-}
-
-void DriveTrain::rotate180() {
-	rightMotorOn();
-	delay(100000);
 	stop();
 }
 

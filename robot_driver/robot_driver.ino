@@ -2,7 +2,6 @@
 #include "DriveTrain.h"
 #include "LineSensor.h"
 #include "LineFollowing.h"
-#include "LimitSwitch.h"
 #include <Servo.h>
 
 // ultrasonic definitions
@@ -54,6 +53,7 @@ LineFollowing lineFollow(leftSensor, rightSensor, driveTrain, uF);
 
 // mode swtich
 const int modePin = A5;
+int mode;
 
 // servos 
 const int dartServoPin = 9;
@@ -61,24 +61,31 @@ const int celebrationServoPin = 10;
 Servo dartServo;
 Servo celebrationServo;
 
-int notOriented = 0;
+// state variables
+int notOriented = 1;
 int oriented = 0;
 int findFirstTee = 0;
 int firstTeeDetected = 0;
 int secondTeeDetected = 0;
 int findLine = 0;
-int touchTheButt =0;
+int touchTheButt = 0;
 int rotate90 = 0;
 int findTeeBackwards = 0;
-int driveToDropZone = 1;
+int driveToDropZone = 0;
 int rotateToDropZone = 0;
-int underRotated = 0;
 int driveAtDropZone = 0;
 int dispense = 0;
 int celebrate = 0;
 
 void setup() {
 	Serial.begin(9600);
+
+	// pin config for servos
+	delay(2000);
+	dartServo.attach(dartServoPin);
+	celebrationServo.attach(celebrationServoPin);
+	celebrationServo.write(0);
+	dartServo.write(0);
 
 	lastTime = micros();
 
@@ -98,6 +105,7 @@ void setup() {
 
 	// pin config for input mode
 	pinMode(modePin, INPUT_PULLUP);
+	mode = digitalRead(modePin);
 
 	// pin config for ultrasonics
 	pinMode(trigPin1, OUTPUT);
@@ -109,87 +117,71 @@ void setup() {
 	digitalWrite(trigPin1, LOW);  // no trigger signal
 	digitalWrite(trigPin2, LOW);  // no trigger signal
 
-	// pin config for servos
-	dartServo.attach(dartServoPin);
-	celebrationServo.attach(celebrationServoPin);
-	celebrationServo.write(0);
-	dartServo.write(0);
+	
 }
 
 void loop() {
 	celebrationServo.write(0);
 	dartServo.write(0);
-  //Serial.println(uL.dist());
-  //delay(2000);
+
 	// orient outwards away from walls
 	if (notOriented) {
-		// Serial.println("\nBeginning!");
 		notOriented = TestStartZone();
-		// Serial.println("Oriented outwards.");
 		delay(1000);
 		oriented = 1;
 	}
 
 	// rotate towards line according to mode
-	if (oriented) {
-		if (digitalRead(modePin)) {
+	else if (oriented) {
+		if (mode)
 			driveTrain.rotateRight();
-			delay(1000);
-			driveTrain.stop();
-		} else {
+		else
 			driveTrain.rotateLeft();
-			delay(1000);
-			driveTrain.stop();
-		}
-		// Serial.println("Oriented towards line. Ready to find first tee.");
+		delay(1000);
+		driveTrain.stop();
 		oriented = 0;
 		findFirstTee = 1;
 	}
 
 	// do line following to first tee
-	if (findFirstTee) {
+	else if (findFirstTee) {
 		findFirstTee = lineFollow.followLine();
-		// Serial.println("First tee detected. Ready for line following");
 		driveTrain.stop();
 		firstTeeDetected = 1;
 	}
 
 	// do line following to second tee
-	if (firstTeeDetected) {
+	else if (firstTeeDetected) {
 		driveTrain.forwards();
 		delay(1000);
 		firstTeeDetected = lineFollow.followLine();
-		// Serial.println("Second tee detected.");
 		driveTrain.stop();
 		delay(1000);
 		secondTeeDetected = 1;
 	}
 
 	// cross over tee
-	if (secondTeeDetected) {
+	else if (secondTeeDetected) {
 		driveTrain.forwards();
 		delay(1000);
 		driveTrain.stop();
 		delay(1000);
-		// Serial.println("Second tee crossed.");
 		secondTeeDetected = 0;
 		findLine = 1;
 	}
 
 	// find next line, do line following, and stop at wall.
-	if (findLine) {
-		findLine = lineFollow.findLine(digitalRead(modePin));
-		// Serial.println("found next line.");
+	else if (findLine) {
+		findLine = lineFollow.findLine(mode);
 		delay(1000);
 		lineFollow.followLine();
 		driveTrain.stop();
-		// Serial.println("stopped at wall");
 		delay(1000);
 		touchTheButt = 1;
 	}
 
 	// touch the contact zone
-	if (touchTheButt) {
+	else if (touchTheButt) {
 		celebrationServo.write(180);
 		delay(1000);
 		celebrationServo.write(0);
@@ -201,16 +193,13 @@ void loop() {
 	}
 
 	// backup, rotate ~90 degrees, and backup again
-	if (rotate90) {
-		Serial.println("WHY HERE");
+	else if (rotate90) {
 		driveTrain.backwards();
 		delay(2000);
-		if (digitalRead(modePin)) {
+		if (mode)
 			driveTrain.rotate90Left();
-			// Serial.println("rotated towards drop zone");
-		} else {
+		else
 			driveTrain.rotate90Right();
-		}
 		driveTrain.backwards();
 		delay(2000);
 		driveTrain.stop();
@@ -219,8 +208,8 @@ void loop() {
 	}
 
 	// do line following to find tee and become "oriented"
-	if (findTeeBackwards) {
-		lineFollow.followLine();
+	else if (findTeeBackwards) {
+		findTeeBackwards = lineFollow.followLine();
 		driveTrain.stop();
 		delay(1000);
 		driveTrain.forwards();
@@ -231,32 +220,34 @@ void loop() {
 	}
 
 	// drive straight along wall to drop zone
-	if (driveToDropZone) {
+	else if (driveToDropZone) {
 		lineFollow.followLine();
 		driveTrain.stop();
-		// Serial.println("at drop zone");
 		delay(1000);
 		driveToDropZone = 0;
-    driveTrain.backwards();
+    	driveTrain.backwards();
 		delay(200);
-    driveTrain.stop();
+    	driveTrain.stop();
+    	delay(1000);
 		rotateToDropZone = 1;
 	}
 
 	// rotate towards drop zone
-	if (rotateToDropZone) {
+	else if (rotateToDropZone) {
 		if (micros() - lastTime > 60000) {
-      Serial.println("rotate");
-			if (digitalRead(modePin)) {
-					if (uL.dist() > turnThresh) {
-						driveTrain.rotateRight();
-					} else {
-						driveTrain.stop();
-						delay(1000);
-            rotateToDropZone = 0;
-		        driveAtDropZone = 1;
-					}
-					lastTime = micros();
+			if (mode) {
+				float d = uL.dist();
+				Serial.println("Rotating towards drop zone");
+				Serial.println(d);
+				if (d > turnThresh || d == 0) {
+					driveTrain.rotateRight();
+				} else {
+					driveTrain.stop();
+					delay(1000);
+					rotateToDropZone = 0;
+					driveAtDropZone = 1;
+				}
+				lastTime = micros();
 			}
 			else {
 				if (uR.dist() > turnThresh) {
@@ -264,70 +255,34 @@ void loop() {
 				} else  {
 					driveTrain.stop();
 					delay(1000);
-          rotateToDropZone = 0;
-		      driveAtDropZone = 1;
+					rotateToDropZone = 0;
+					driveAtDropZone = 1;
 				}
 			}
 		}
 	}
 
-	if (driveAtDropZone) {
+	else if (driveAtDropZone) {
 		lineFollow.followLine();
 		driveTrain.stop();
 		driveAtDropZone = 0;
 		dispense = 1;
 	}
 	
-	if (dispense) {
-		Serial.println("HERE");
-		if (digitalRead(modePin)) {
+	else if (dispense) {
+		if (mode)
 			driveTrain.rotateLeft();
-			delay(300);
-			driveTrain.stop();
-		}
-		else {
+		else
 			driveTrain.rotateRight();
-			delay(300);
-			driveTrain.stop();
-		}
+		delay(300);
+		driveTrain.stop();
 		dartServo.write(120);
 		delay(1000);
 		dispense = 0;
 		celebrate = 1;
-
-		// Serial.println("notOriented ");
-		// Serial.print(notOriented);
-		// Serial.println("oriented ");
-		// Serial.print(oriented);
-		// Serial.println("findFirstTee ");
-		// Serial.print(findFirstTee);
-		// Serial.println("firstTeeDetected ");
-		// Serial.print(firstTeeDetected);
-		// Serial.println("secondTeeDetected ");
-		// Serial.print(secondTeeDetected);
-		// Serial.println("findLine ");
-		// Serial.print(findLine);
-		// Serial.println("touchTheButt ");
-		// Serial.print(touchTheButt);
-		// Serial.println("rotate90 ");
-		// Serial.print(rotate90);
-		// Serial.println("findTeeBackwards ");
-		// Serial.print(findTeeBackwards);
-		// Serial.println("driveToDropZone ");
-		// Serial.print(driveToDropZone);
-		// Serial.println("rotateToDropZone ");
-		// Serial.print(rotateToDropZone);
-		// Serial.println("underRotated ");
-		// Serial.print(underRotated);
-		// Serial.println("driveAtDropZone ");
-		// Serial.print(driveAtDropZone);
-		// Serial.println("dispense ");
-		// Serial.print(dispense);
-		// Serial.println("celebrate ");
-		// Serial.print(celebrate);
 	}
 
-	if (celebrate) {
+	else if (celebrate) {
 		driveTrain.stop();
 	}
 

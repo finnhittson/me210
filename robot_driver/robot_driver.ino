@@ -23,6 +23,7 @@ bool findCorner = false;
 float loThresh = 3.0;       // [cm]
 float hiThresh = 800.0;     // [in] when <1" away from sensor
 float farThresh = 40.0;     // [cm]
+float turnThresh = 5;
 unsigned long lastTime;
 float dist1;
 float dist2;
@@ -60,23 +61,26 @@ const int celebrationServoPin = 10;
 Servo dartServo;
 Servo celebrationServo;
 
-int notOriented = 1;
+int notOriented = 0;
 int oriented = 0;
 int findFirstTee = 0;
 int firstTeeDetected = 0;
 int secondTeeDetected = 0;
 int findLine = 0;
-int touchTheButt = 0;
+int touchTheButt =0;
 int rotate90 = 0;
 int findTeeBackwards = 0;
-int driveToDropZone = 0;
+int driveToDropZone = 1;
 int rotateToDropZone = 0;
+int underRotated = 0;
 int driveAtDropZone = 0;
 int dispense = 0;
 int celebrate = 0;
 
 void setup() {
 	Serial.begin(9600);
+
+	lastTime = micros();
 
 	// pin config for left motor
 	pinMode(inLeft, OUTPUT);
@@ -113,15 +117,10 @@ void setup() {
 }
 
 void loop() {
-	// Serial.println("HERE");
 	celebrationServo.write(0);
 	dartServo.write(0);
-
-	// driveTrain.rotate90Left();
-	// delay(2000);
-	// driveTrain.rotate90Right();
-	// delay(2000);
-
+  //Serial.println(uL.dist());
+  //delay(2000);
 	// orient outwards away from walls
 	if (notOriented) {
 		// Serial.println("\nBeginning!");
@@ -203,6 +202,7 @@ void loop() {
 
 	// backup, rotate ~90 degrees, and backup again
 	if (rotate90) {
+		Serial.println("WHY HERE");
 		driveTrain.backwards();
 		delay(2000);
 		if (digitalRead(modePin)) {
@@ -237,38 +237,49 @@ void loop() {
 		// Serial.println("at drop zone");
 		delay(1000);
 		driveToDropZone = 0;
+    driveTrain.backwards();
+		delay(200);
+    driveTrain.stop();
 		rotateToDropZone = 1;
 	}
 
 	// rotate towards drop zone
 	if (rotateToDropZone) {
-		driveTrain.backwards();
-		delay(200);
-		if (digitalRead(modePin)) {
-			driveTrain.rotateRight();
-			delay(2100);
+		if (micros() - lastTime > 60000) {
+      Serial.println("rotate");
+			if (digitalRead(modePin)) {
+					if (uL.dist() > turnThresh) {
+						driveTrain.rotateRight();
+					} else {
+						driveTrain.stop();
+						delay(1000);
+            rotateToDropZone = 0;
+		        driveAtDropZone = 1;
+					}
+					lastTime = micros();
+			}
+			else {
+				if (uR.dist() > turnThresh) {
+					driveTrain.rotateLeft();
+				} else  {
+					driveTrain.stop();
+					delay(1000);
+          rotateToDropZone = 0;
+		      driveAtDropZone = 1;
+				}
+			}
 		}
-		else {
-			driveTrain.rotateLeft();
-			delay(1900);
-		}
-		driveTrain.stop();
-		rotateToDropZone = 0;
-		driveAtDropZone = 1;
-		delay(1000);
-		// Serial.println("rotated towards drop zone");
 	}
 
 	if (driveAtDropZone) {
-		driveTrain.forwards();
-		delay(3000);
-		// lineFollow.followLine();
+		lineFollow.followLine();
 		driveTrain.stop();
 		driveAtDropZone = 0;
 		dispense = 1;
 	}
 	
 	if (dispense) {
+		Serial.println("HERE");
 		if (digitalRead(modePin)) {
 			driveTrain.rotateLeft();
 			delay(300);
@@ -283,6 +294,37 @@ void loop() {
 		delay(1000);
 		dispense = 0;
 		celebrate = 1;
+
+		// Serial.println("notOriented ");
+		// Serial.print(notOriented);
+		// Serial.println("oriented ");
+		// Serial.print(oriented);
+		// Serial.println("findFirstTee ");
+		// Serial.print(findFirstTee);
+		// Serial.println("firstTeeDetected ");
+		// Serial.print(firstTeeDetected);
+		// Serial.println("secondTeeDetected ");
+		// Serial.print(secondTeeDetected);
+		// Serial.println("findLine ");
+		// Serial.print(findLine);
+		// Serial.println("touchTheButt ");
+		// Serial.print(touchTheButt);
+		// Serial.println("rotate90 ");
+		// Serial.print(rotate90);
+		// Serial.println("findTeeBackwards ");
+		// Serial.print(findTeeBackwards);
+		// Serial.println("driveToDropZone ");
+		// Serial.print(driveToDropZone);
+		// Serial.println("rotateToDropZone ");
+		// Serial.print(rotateToDropZone);
+		// Serial.println("underRotated ");
+		// Serial.print(underRotated);
+		// Serial.println("driveAtDropZone ");
+		// Serial.print(driveAtDropZone);
+		// Serial.println("dispense ");
+		// Serial.print(dispense);
+		// Serial.println("celebrate ");
+		// Serial.print(celebrate);
 	}
 
 	if (celebrate) {

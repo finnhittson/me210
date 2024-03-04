@@ -24,7 +24,8 @@ bool keepDriving = true;
 bool findCorner = false;
 float loThresh = 3.0;       // [cm]
 float hiThresh = 800.0;     // [in] when <1" away from sensor
-float farThresh = 40.0;     // [cm]
+// float farThresh = 40.0;     // [cm]
+float farThresh = 40.0;
 float turnThresh = 5;
 unsigned long lastTime;
 float dist1;
@@ -126,12 +127,20 @@ void setup() {
 void loop() {
 	mode = digitalRead(modePin);
 
+	dist1 = uL.dist();
+	dist2 = uR.dist();
+	distF = uF.dist();
+	// // Serial.println(dist1);
+	// // Serial.println(dist2);
+	// Serial.println(distF);
+
 	// orient outwards away from walls
 	if (notOriented) {
-		delay(5000);
+		delay(10000);
 		notOriented = TestStartZone();
 		delay(1000);
 		oriented = 1;
+		Serial.println("oriented");
 	}
 
 	// rotate towards line according to mode
@@ -144,6 +153,7 @@ void loop() {
 		driveTrain.stop();
 		oriented = 0;
 		findFirstTee = 1;
+		Serial.println("facing first tee");
 	}
 
 	// do line following to first tee
@@ -151,6 +161,7 @@ void loop() {
 		findFirstTee = lineFollow.followLine();
 		driveTrain.stop();
 		firstTeeDetected = 1;
+		Serial.println("found first tee");
 	}
 
 	// do line following to second tee
@@ -161,6 +172,7 @@ void loop() {
 		driveTrain.stop();
 		delay(1000);
 		secondTeeDetected = 1;
+		Serial.println("found second tee");
 	}
 
 	// cross over tee
@@ -171,16 +183,19 @@ void loop() {
 		delay(1000);
 		secondTeeDetected = 0;
 		findLine = 1;
+		Serial.println("crossed second tee");
 	}
 
 	// find next line, do line following, and stop at wall.
 	else if (findLine) {
 		findLine = lineFollow.findLine(mode);
+		Serial.println("found line");
 		delay(1000);
 		lineFollow.followLine();
 		driveTrain.stop();
 		delay(1000);
 		touchTheButt = 1;
+		Serial.println("at contact zone");
 	}
 
 	// touch the contact zone
@@ -337,7 +352,7 @@ int TestStartZone() {
 		distF = uF.dist();
 		// Serial.println(dist1);
 		// Serial.println(dist2);
-		// Serial.println(distF);
+		Serial.println(distF);
 
 		if (!keepDriving) {
 			driveTrain.stop();
@@ -367,11 +382,11 @@ int TestStartZone() {
 				}
 			}
 			else {
-				if (dist1 - dist2 > 5) {
+				if (dist1 - dist2 > 10.0) {	// buffer = 5.0
 					driveTrain.rotateLeft();
 					// Serial.println("good left");
 				}
-				else if (dist2 - dist1 > 5) {
+				else if (dist2 - dist1 > 10.0) {
 					driveTrain.rotateRight();
 					// Serial.println("good right");
 				}

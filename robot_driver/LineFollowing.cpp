@@ -108,7 +108,7 @@ bool LineFollowing::AtFrontWall(const HCSR04& uF, float thresh) {
     lastTime = micros();
     float d = uF.dist();
     //  Serial.println(d);
-    if (d > 3.0) 
+    if (d > 3.0 && d != 0) 
       return false;
     else 
       return true;

@@ -3,6 +3,9 @@
 #include "LineSensor.h"
 #include "LineFollowing.h"
 #include <Servo.h>
+#include <Wire.h>
+
+#define FOLLOWER_ADDRESS 0x60
 
 // ultrasonic definitions
 const int trigPin1 = 2;   // LEFT
@@ -52,7 +55,7 @@ LineSensor rightSensor(threshold, rightSensorPin);
 LineFollowing lineFollow(leftSensor, rightSensor, driveTrain, uF);
 
 // mode swtich
-const int modePin = A5;
+const int modePin = 9;
 int mode;
 
 // servos 
@@ -60,6 +63,7 @@ const int dartServoPin = 9;
 const int celebrationServoPin = 10;
 Servo dartServo;
 Servo celebrationServo;
+bool sendMe = true;
 
 // state variables
 int notOriented = 1;
@@ -81,11 +85,12 @@ void setup() {
 	Serial.begin(9600);
 
 	// pin config for servos
-	delay(2000);
-	dartServo.attach(dartServoPin);
-	celebrationServo.attach(celebrationServoPin);
-	celebrationServo.write(0);
-	dartServo.write(0);
+	Wire.begin();
+	// delay(2000);
+	// dartServo.attach(dartServoPin);
+	// celebrationServo.attach(celebrationServoPin);
+	// celebrationServo.write(0);
+	// dartServo.write(0);
 
 	lastTime = micros();
 
@@ -115,17 +120,15 @@ void setup() {
 	pinMode(echoPin2, INPUT);
 	pinMode(echoPinF, INPUT);
 	digitalWrite(trigPin1, LOW);  // no trigger signal
-	digitalWrite(trigPin2, LOW);  // no trigger signal
-
-	
+	digitalWrite(trigPin2, LOW);  // no trigger signal	
 }
 
 void loop() {
-	celebrationServo.write(0);
-	dartServo.write(0);
+	mode = digitalRead(modePin);
 
 	// orient outwards away from walls
 	if (notOriented) {
+		delay(5000);
 		notOriented = TestStartZone();
 		delay(1000);
 		oriented = 1;
@@ -182,14 +185,17 @@ void loop() {
 
 	// touch the contact zone
 	else if (touchTheButt) {
-		celebrationServo.write(180);
-		delay(1000);
-		celebrationServo.write(0);
-		delay(1000);
-		celebrationServo.write(180);
-		delay(1000);
+		delay(5000);
+		sendI2C(1);
+		// while (!readI2C());
+		// 	// empty
+		// delay(6000);
+		while (!readI2C()) {
+			delay(100);
+		}
 		touchTheButt = 0;
 		rotate90 = 1;
+		Serial.println("touche da butte");
 	}
 
 	// backup, rotate ~90 degrees, and backup again
@@ -270,20 +276,30 @@ void loop() {
 	}
 	
 	else if (dispense) {
+		delay(4000);
 		if (mode)
 			driveTrain.rotateLeft();
 		else
 			driveTrain.rotateRight();
 		delay(300);
 		driveTrain.stop();
-		dartServo.write(120);
-		delay(1000);
+		//delay(10000);
+		sendI2C(2);
+		Serial.println("sent");
+		delay(2000);
+		while (!readI2C()) {
+			delay(100);
+		}
+		// Serial.println(readI2C());
+		Serial.println("received");
 		dispense = 0;
 		celebrate = 1;
 	}
 
 	else if (celebrate) {
+		sendI2C(1);
 		driveTrain.stop();
+		delay(5000);
 	}
 
 	// // test line sensors
@@ -293,6 +309,23 @@ void loop() {
 	// Serial.println(analogRead(rightSensorPin));
 	// Serial.println();
 	// delay(1000);
+}
+
+void sendI2C(int msg) {
+	Wire.beginTransmission(FOLLOWER_ADDRESS);
+	Wire.write(msg);
+	Wire.endTransmission();
+}
+
+int readI2C() {
+	Wire.requestFrom(FOLLOWER_ADDRESS, 1);
+	//int bytes = Wire.available();
+	//return Wire.read();
+	while(Wire.available()) {
+		char c = Wire.read();    // Receive a byte as character
+		Serial.print(c);         // Print the character
+		return c;
+	}
 }
 
 int TestStartZone() {

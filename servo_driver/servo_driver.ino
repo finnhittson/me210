@@ -14,7 +14,9 @@ Servo dartServo;
 Servo celebrationServo;
 const int goTime = 1000;
 unsigned long lastTime;
+bool first = true;
 bool next = false;
+bool last = false;
 
 // Communication
 int msgIn = 0;
@@ -60,21 +62,34 @@ void receiveEvent(int input) {
 
 void touchTheButt() {
 //  Serial.println("touching the butt");
-  if (!next && (millis() - lastTime > goTime)) { // give time to move to open
-    Serial.println("MOVE");
+  if (first && (millis() - lastTime > goTime)) { // give time to move to open
+    Serial.println("MOVE BITCH");
     celebrationServo.write(180);
-    
+
+    first = false;
     next = true;
+    last = false;
     lastTime = millis();
   }
-  else if (next && (millis() - lastTime > goTime)) { // give time to move to closed
+  if (next && (millis() - lastTime > goTime)) { // give time to move to closed
     Serial.println("GETOUT THEWAY");
     celebrationServo.write(0);
+
+    first = false;
+    next = false;
+    last = true;
+    lastTime = millis();
+  }
+  if (last && (millis() - lastTime > goTime)) { // give time to move to closed
+    Serial.println("AH");
+    celebrationServo.write(180);
     
     msgOut = 1;   // tell leader finished 
     msgIn = 0;    // don't run again
+
+    first = true;
     next = false;
-    lastTime = millis();
+    last = false;
   }
 }
 

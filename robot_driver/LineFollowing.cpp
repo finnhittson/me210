@@ -15,6 +15,7 @@ LineFollowing::LineFollowing(
 }
 
 bool LineFollowing::rapidSwitching() {
+  Serial.println("rapid switching");
 	int rapidSwitchTime = 100;
 	if (millis() - prevSwitchTime < rapidSwitchTime && prevSensor != currentSensor) {
 		rapidSwitchCount++;
@@ -35,17 +36,18 @@ int LineFollowing::followLine(void) {
 	Serial.println("in line following");
 	bool run = true;
 	while (run) {
-		if (leftSensor.status()) {
-			driveTrain.rotateLeft();
-			currentSensor = 0;
-			run = rapidSwitching();
-		} else if (rightSensor.status()) {
-			driveTrain.rotateRight();
-			currentSensor = 1;
-			run = rapidSwitching();
-		} else if (leftSensor.status() && rightSensor.status()){
+    if (leftSensor.status() && rightSensor.status()){
       		Serial.println("Found tee.");
 			run = false;
+    }
+		else if (leftSensor.status()) {
+			driveTrain.rotateLeftPivot();
+			currentSensor = 0;
+			//run = rapidSwitching();
+		} else if (rightSensor.status()) {
+			driveTrain.rotateRightPivot();
+			currentSensor = 1;
+			//run = rapidSwitching();
 		} else if (AtFrontWall(uF)){
       		Serial.println("Found wall.");
      		Serial.println(uF.dist());

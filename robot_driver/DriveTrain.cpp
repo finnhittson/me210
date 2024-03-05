@@ -46,6 +46,18 @@ void DriveTrain::rotateLeft(void) {
 	rightMotor.forwards();
 }
 
+void DriveTrain::rotateLeftPivot(void) {
+	leftMotor.stop();
+	rightMotor.setSpeed(dutyRight);
+	rightMotor.forwards();
+}
+
+void DriveTrain::rotateRightPivot(void) {
+	rightMotor.stop();
+	leftMotor.setSpeed(dutyRight);
+	leftMotor.forwards();
+}
+
 void DriveTrain::rotateRight(void) {
 	leftMotor.setSpeed(dutyLeft);
 	rightMotor.setSpeed(dutyRight);

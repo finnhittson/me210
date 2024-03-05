@@ -15,6 +15,8 @@ public:
 	void forwards();
 	void backwards();
 	void rotateLeft();
+  void rotateLeftPivot();
+  void rotateRightPivot();
 	void rotateRight();
 	void rotate90Right();
 	void rotate90Left();

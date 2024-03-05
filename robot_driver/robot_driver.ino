@@ -70,8 +70,8 @@ Servo celebrationServo;
 bool sendMe = true;
 
 // state variables
-int firstCelebration = 0;
-int notOriented = 1;
+int firstCelebration = 1;
+int notOriented = 0;
 int oriented = 0;
 int findFirstTee = 0;
 int firstTeeDetected = 0;
@@ -140,11 +140,16 @@ void loop() {
 		delay(5000);
 		sendI2C(1);
 		delay(1000);
+    /*
 		while (!readI2C()) {
 			delay(100);
-		}
+		}*/
 		firstCelebration = 0;
+    Serial.println("did firrst");
 		notOriented = 1;
+    //delay(4000);
+    //touchTheButt = ;
+    //celebrate = 1;
 	}
 
 	// orient outwards away from walls
@@ -213,12 +218,14 @@ void loop() {
 
 	// touch the contact zone
 	else if (touchTheButt) {
+    /*
 		sendI2C(1);
 		delay(1000);
 		while (!readI2C()) {
 			delay(100);
 		}
-		delay(1000);
+    */
+		delay(2000);
 		touchTheButt = 0;
 		rotate90 = 1;
 		Serial.println("touche da butte");
@@ -233,7 +240,7 @@ void loop() {
 		else
 			driveTrain.rotate90Right();
 		driveTrain.backwards();
-		delay(2000);
+		delay(3000);
 		driveTrain.stop();
 		rotate90 = 0;
 		findTeeBackwards = 1;
@@ -325,6 +332,8 @@ void loop() {
 		sendI2C(1);
 		driveTrain.stop();
 		delay(5000);
+    celebrate = 0;
+    Serial.println("done");
 	}
 
 	// // test line sensors
@@ -379,19 +388,19 @@ int TestStartZone() {
 			if (!findCorner) {
 				if (dist1 > farThresh && dist1 != 0 && dist1 <= crazyThresh) {
 					driveTrain.rotateLeft();
-					// Serial.println("left!");
-          // Serial.print("dist1: ");
-          // Serial.println(dist1);
-          // Serial.print("dist2: ");
-          // Serial.println(dist2);
+					Serial.println("left!");
+          Serial.print("dist1: ");
+          Serial.println(dist1);
+          Serial.print("dist2: ");
+          Serial.println(dist2);
 				}
 				else if (dist2 > farThresh && dist2 != 0 && dist2 <= crazyThresh) {
-					driveTrain.rotateRight();
-					// Serial.println("right");
-          // Serial.print("dist1: ");
-          // Serial.println(dist1);
-          // Serial.print("dist2: ");
-          // Serial.println(dist2);
+					driveTrain.rotateLeft();
+					Serial.println("right");
+          Serial.print("dist1: ");
+          Serial.println(dist1);
+          Serial.print("dist2: ");
+          Serial.println(dist2);
 				}
 				else if (dist1 <= farThresh && dist2 <= farThresh && distF <= farThresh) {
 					driveTrain.rotateLeft();

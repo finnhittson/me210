@@ -26,8 +26,10 @@ float loThresh = 3.0;       // [cm]
 float hiThresh = 800.0;     // [in] when <1" away from sensor
 // float farThresh = 40.0;     // [cm]
 float farThresh = 40.0;
+float crazyThresh = 130.0;
 float turnThresh = 5;
 unsigned long lastTime;
+unsigned long lastTimeSZ;
 float dist1;
 float dist2;
 float distF;
@@ -128,6 +130,11 @@ void setup() {
 
 void loop() {
 	mode = digitalRead(modePin);
+
+  // Serial.print("uL: ");
+  // Serial.println(uL.dist());
+  //Serial.print("uR: ");
+  //Serial.println(uR.dist());
 
 	if (firstCelebration) {
 		delay(5000);
@@ -345,9 +352,10 @@ int readI2C() {
 }
 
 int TestStartZone() {
-	lastTime = millis();
 	bool run = true;
+  //tooLong = millis();
 	while (run) {
+    lastTimeSZ = millis();
 		dist1 = uL.dist();
 		dist2 = uR.dist();
 		distF = uF.dist();
@@ -361,7 +369,7 @@ int TestStartZone() {
 			return 0;
 		}
 		else {
-			if (distF > farThresh && distF != 0 && dist1 < farThresh && dist2 < farThresh) {
+			if (distF > farThresh && distF != 0 && (dist1 < farThresh || dist1 > crazyThresh) && (dist2 < farThresh || dist2 > crazyThresh)) {
 				findCorner = true;
 				// Serial.println("good");
 			}
@@ -369,24 +377,32 @@ int TestStartZone() {
 			// 	findCorner = false;
 			// }
 			if (!findCorner) {
-				if (dist1 > farThresh && dist1 != 0) {
+				if (dist1 > farThresh && dist1 != 0 && dist1 <= crazyThresh) {
 					driveTrain.rotateLeft();
-					Serial.println("left!");
+					// Serial.println("left!");
+          // Serial.print("dist1: ");
+          // Serial.println(dist1);
+          // Serial.print("dist2: ");
+          // Serial.println(dist2);
 				}
-				else if (dist2 > farThresh && dist2 != 0) {
+				else if (dist2 > farThresh && dist2 != 0 && dist2 <= crazyThresh) {
 					driveTrain.rotateRight();
-					Serial.println("right");
+					// Serial.println("right");
+          // Serial.print("dist1: ");
+          // Serial.println(dist1);
+          // Serial.print("dist2: ");
+          // Serial.println(dist2);
 				}
 				else if (dist1 <= farThresh && dist2 <= farThresh && distF <= farThresh) {
 					driveTrain.rotateLeft();
-					Serial.println("left");
+					// Serial.println("final line");
 				}
 			}
 			else {
 				Serial.println(switchingCounter);
 				if (switchingCounter > 10) {
 					driveTrain.stop();
-					Serial.println("switching counter reached");
+					// Serial.println("switching counter reached");
 					keepDriving = false;
 				}
 				else if (dist1 - dist2 > 10.0) {	// buffer = 5.0
@@ -405,10 +421,22 @@ int TestStartZone() {
 					keepDriving = false;
 				}
 			}
-			if (millis() - lastTime < 60) {
-				delay(millis() - lastTime);
+      /*
+			while (millis() - lastTime < 60) {
+				//delay(60-millis() - lastTime);
+        //delay(10);
+        continue;
 			}
+      */
 		}
+    if (millis() - lastTimeSZ < 60) {
+      unsigned long num = 60;
+        // Serial.println(num);
+        // Serial.println(millis());
+        // Serial.println(lastTimeSZ);
+        // Serial.println(num - (millis() - lastTimeSZ));
+				delay(num - (millis() - lastTimeSZ));
+    }
 	}
 }
 

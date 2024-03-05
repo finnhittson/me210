@@ -17,7 +17,7 @@ unsigned long lastTime;
 bool next = false;
 
 // Communication
-int msgIn = 1;
+int msgIn = 0;
 int msgOut = 0;
 
 void setup() {
@@ -38,13 +38,13 @@ void setup() {
 
 void loop() {
   if (msgIn == 1) {
-//    Serial.println("gonna touche da butte ");
     touchTheButt();
+    Serial.print("done?: ");
     Serial.println(msgOut);
   }
   else if (msgIn == 2) {
-    Serial.print("going to dispense ");
     dispense();
+    Serial.print("done?: ");
     Serial.println(msgOut);
   }
 }
@@ -59,26 +59,41 @@ void receiveEvent(int input) {
 }
 
 void touchTheButt() {
-  Serial.println("touching the butt");
-  celebrationServo.write(180);
-  if (millis() - lastTime > goTime) { // give time to move to 180
-    celebrationServo.write(0);
-    msgOut = 1;   // tell leader finished 
-    msgIn = 0;    // don't run again
-  }
-}
-
-void dispense() {
-  dartServo.write(50);
-  if (millis() - lastTime > goTime) { // give time to move to open
-    dartServo.write(0);
+//  Serial.println("touching the butt");
+  if (!next && (millis() - lastTime > goTime)) { // give time to move to open
+    Serial.println("MOVE");
+    celebrationServo.write(180);
+    
     next = true;
     lastTime = millis();
   }
   else if (next && (millis() - lastTime > goTime)) { // give time to move to closed
+    Serial.println("GETOUT THEWAY");
+    celebrationServo.write(0);
+    
+    msgOut = 1;   // tell leader finished 
+    msgIn = 0;    // don't run again
+    next = false;
+    lastTime = millis();
+  }
+}
+
+void dispense() {
+  if (!next && (millis() - lastTime > goTime)) { // give time to move to open
+    Serial.println("THE PARTY DONT START");
+    dartServo.write(50);
+    
+    next = true;
+    lastTime = millis();
+  }
+  else if (next && (millis() - lastTime > goTime)) { // give time to move to closed
+    Serial.println("TIL I WALK IN");
+    dartServo.write(0);
+    
     msgOut = 2;   // tell leader finished 
     msgIn = 0;    // don't run again
     next = false;
+    lastTime = millis();
   }
 }
 

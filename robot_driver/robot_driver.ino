@@ -30,7 +30,8 @@ float turnThresh = 5;
 unsigned long lastTime;
 float dist1;
 float dist2;
-float distF; 
+float distF;
+int switchingCounter = 0;
 
 // motor definitions
 const int inLeft = 8;
@@ -67,6 +68,7 @@ Servo celebrationServo;
 bool sendMe = true;
 
 // state variables
+int firstCelebration = 0;
 int notOriented = 1;
 int oriented = 0;
 int findFirstTee = 0;
@@ -127,16 +129,20 @@ void setup() {
 void loop() {
 	mode = digitalRead(modePin);
 
-	dist1 = uL.dist();
-	dist2 = uR.dist();
-	distF = uF.dist();
-	// // Serial.println(dist1);
-	// // Serial.println(dist2);
-	// Serial.println(distF);
+	if (firstCelebration) {
+		delay(5000);
+		sendI2C(1);
+		delay(1000);
+		while (!readI2C()) {
+			delay(100);
+		}
+		firstCelebration = 0;
+		notOriented = 1;
+	}
 
 	// orient outwards away from walls
-	if (notOriented) {
-		delay(10000);
+	else if (notOriented) {
+		delay(2000);
 		notOriented = TestStartZone();
 		delay(1000);
 		oriented = 1;
@@ -200,14 +206,12 @@ void loop() {
 
 	// touch the contact zone
 	else if (touchTheButt) {
-		delay(5000);
 		sendI2C(1);
-		// while (!readI2C());
-		// 	// empty
-		// delay(6000);
+		delay(1000);
 		while (!readI2C()) {
 			delay(100);
 		}
+		delay(1000);
 		touchTheButt = 0;
 		rotate90 = 1;
 		Serial.println("touche da butte");
@@ -291,7 +295,6 @@ void loop() {
 	}
 	
 	else if (dispense) {
-		delay(4000);
 		if (mode)
 			driveTrain.rotateLeft();
 		else
@@ -300,13 +303,13 @@ void loop() {
 		driveTrain.stop();
 		//delay(10000);
 		sendI2C(2);
-		Serial.println("sent");
+		// Serial.println("sent");
 		delay(2000);
 		while (!readI2C()) {
 			delay(100);
 		}
 		// Serial.println(readI2C());
-		Serial.println("received");
+		// Serial.println("received");
 		dispense = 0;
 		celebrate = 1;
 	}
@@ -334,8 +337,6 @@ void sendI2C(int msg) {
 
 int readI2C() {
 	Wire.requestFrom(FOLLOWER_ADDRESS, 1);
-	//int bytes = Wire.available();
-	//return Wire.read();
 	while(Wire.available()) {
 		char c = Wire.read();    // Receive a byte as character
 		Serial.print(c);         // Print the character
@@ -352,7 +353,7 @@ int TestStartZone() {
 		distF = uF.dist();
 		// Serial.println(dist1);
 		// Serial.println(dist2);
-		Serial.println(distF);
+		// Serial.println(distF);
 
 		if (!keepDriving) {
 			driveTrain.stop();
@@ -360,39 +361,47 @@ int TestStartZone() {
 			return 0;
 		}
 		else {
-			if (distF > farThresh) {
+			if (distF > farThresh && distF != 0 && dist1 < farThresh && dist2 < farThresh) {
 				findCorner = true;
 				// Serial.println("good");
 			}
-			else {
-				findCorner = false;
-			}
+			// else {
+			// 	findCorner = false;
+			// }
 			if (!findCorner) {
-				if (dist1 > farThresh) {
+				if (dist1 > farThresh && dist1 != 0) {
 					driveTrain.rotateLeft();
-					// Serial.println("left!");
+					Serial.println("left!");
 				}
-				if (dist2 > farThresh) {
+				else if (dist2 > farThresh && dist2 != 0) {
 					driveTrain.rotateRight();
-					// Serial.println("right");
+					Serial.println("right");
 				}
-				if (dist1 <= farThresh && dist2 <= farThresh && distF <= farThresh) {
+				else if (dist1 <= farThresh && dist2 <= farThresh && distF <= farThresh) {
 					driveTrain.rotateLeft();
-					// Serial.println("left");
+					Serial.println("left");
 				}
 			}
 			else {
-				if (dist1 - dist2 > 10.0) {	// buffer = 5.0
+				Serial.println(switchingCounter);
+				if (switchingCounter > 10) {
+					driveTrain.stop();
+					Serial.println("switching counter reached");
+					keepDriving = false;
+				}
+				else if (dist1 - dist2 > 10.0) {	// buffer = 5.0
 					driveTrain.rotateLeft();
 					// Serial.println("good left");
+					switchingCounter++;
 				}
 				else if (dist2 - dist1 > 10.0) {
 					driveTrain.rotateRight();
 					// Serial.println("good right");
+					switchingCounter++;
 				}
 				else {
 					driveTrain.stop();
-					// Serial.println("good stop");
+					Serial.println("good stop");
 					keepDriving = false;
 				}
 			}

@@ -36,10 +36,10 @@ int LineFollowing::followLine(void) {
 	Serial.println("in line following");
 	bool run = true;
 	while (run) {
-    if (leftSensor.status() && rightSensor.status()){
-      		Serial.println("Found tee.");
-			run = false;
-    }
+		if (leftSensor.status() && rightSensor.status()){
+				Serial.println("Found tee.");
+				run = false;
+		}
 		else if (leftSensor.status()) {
 			driveTrain.rotateLeftPivot();
 			currentSensor = 0;
@@ -60,6 +60,7 @@ int LineFollowing::followLine(void) {
 		}
 	}
 	driveTrain.stop();
+	Serial.println("Stop here");
 	return 0;
 }
 

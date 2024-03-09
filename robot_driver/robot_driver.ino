@@ -28,6 +28,7 @@ float hiThresh = 800.0;     // [in] when <1" away from sensor
 float farThresh = 40.0;
 float crazyThresh = 130.0;
 float turnThresh = 5;
+float backThresh = 5.0;
 unsigned long lastTime;
 unsigned long lastTimeSZ;
 float dist1;
@@ -70,7 +71,7 @@ Servo celebrationServo;
 bool sendMe = true;
 
 // state variables
-int firstCelebration = 0;
+int firstCelebration = 1;
 int notOriented = 0;
 int oriented = 0;
 int findFirstTee = 0;
@@ -80,7 +81,7 @@ int findLine = 0;
 int touchTheButt = 0;
 int rotate90 = 0;
 int findTeeBackwards = 0;
-int driveToDropZone = 1;
+int driveToDropZone = 0;
 int rotateToDropZone = 0;
 int driveAtDropZone = 0;
 int dispense = 0;
@@ -249,27 +250,45 @@ void loop() {
 
 	// do line following to find tee and become "oriented"
 	else if (findTeeBackwards) {
-		findTeeBackwards = lineFollow.followLine();
+		// Serial.println("once");
+		lineFollow.followLine();
 		// driveTrain.stop();	// delete?
 		// delay(1000);	// delete?
 		driveTrain.forwards();
 		delay(1000);
 		// driveTrain.stop();	// delete?
 		// delay(1000);	// delete?
+		findTeeBackwards = lineFollow.followLine();
+		lastTime = millis();
+		// Serial.println("ready to leave");
 		driveToDropZone = 1;
 	}
 
 	// drive straight along wall to drop zone
 	else if (driveToDropZone) {
-		lineFollow.followLine();
+		// Serial.println("bleh");
 		// driveTrain.stop();	// delete?
 		// delay(1000);	// delete?
-		driveToDropZone = 0;
-    	driveTrain.backwards();
-		delay(160);		// 200
-    	driveTrain.stop();
-    	// delay(1000);	// delete?
-		rotateToDropZone = 1;
+		
+    	// driveTrain.backwards();
+		// delay(160);		// 200
+    	// driveTrain.stop();
+    	// // delay(1000);	// delete?
+
+		if (millis() - lastTime > 60) {
+			float d = uF.dist();
+			// Serial.println(d);
+			if (d < backThresh || d == 0) {
+				driveTrain.backwards();
+			} else {
+				driveTrain.stop();
+				// Serial.println(d);
+				// delay(500);	// 1000
+				rotateToDropZone = 1;
+				driveToDropZone = 0;
+			}
+			lastTime = micros();
+		}
 	}
 
 	// rotate towards drop zone
@@ -277,8 +296,8 @@ void loop() {
 		if (micros() - lastTime > 60000) {
 			if (mode) {
 				float d = uL.dist();
-				Serial.println("Rotating towards drop zone");
-				Serial.println(d);
+				// Serial.println("Rotating towards drop zone");
+				// Serial.println(d);
 				if (d > turnThresh || d == 0) {
 					driveTrain.rotateRight();
 				} else {
@@ -314,7 +333,7 @@ void loop() {
 			driveTrain.rotateLeft();
 		else
 			driveTrain.rotateRight();
-		delay(300);
+		delay(500);		// 300
 		driveTrain.stop();
 		//delay(10000);
 		sendI2C(2);

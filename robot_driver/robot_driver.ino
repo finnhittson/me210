@@ -12,12 +12,12 @@ const int trigPin1 = 2;   // LEFT
 const int echoPin1 = 3;
 const int trigPin2 = 4;   // RIGHT
 const int echoPin2 = 5;
-const int trigPinF = 10;  // FRONT
-const int echoPinF = 11;
+const int trigPinF = A3;  // FRONT
+const int echoPinF = A2;
 
-HCSR04 uL(2, 3); //initialisation class HCSR04 (trig pin , echo pin, number of sensor)
-HCSR04 uR(4, 5);
-HCSR04 uF(A3, A2);
+HCSR04 uL(trigPin1, echoPin1); //initialisation class HCSR04 (trig pin , echo pin, number of sensor)
+HCSR04 uR(trigPin2, echoPin2);
+HCSR04 uF(trigPinF, echoPinF);
 
 // motor + ultrasonic vars
 bool keepDriving = true;
@@ -43,7 +43,7 @@ const int inRight = 13;
 const int outRight = 12;
 const int enableRight = 11;
 int dutyLeft = 110;  // 0 - 255
-int dutyRight = 80;
+int dutyRight = 82;
 Motor leftMotor(inLeft, outLeft, enableLeft, dutyLeft);
 Motor rightMotor(inRight, outRight, enableRight, dutyRight);
 DriveTrain driveTrain(leftMotor, rightMotor, dutyLeft, dutyRight);
@@ -70,7 +70,7 @@ Servo celebrationServo;
 bool sendMe = true;
 
 // state variables
-int firstCelebration = 1;
+int firstCelebration = 0;
 int notOriented = 0;
 int oriented = 0;
 int findFirstTee = 0;
@@ -80,13 +80,14 @@ int findLine = 0;
 int touchTheButt = 0;
 int rotate90 = 0;
 int findTeeBackwards = 0;
-int driveToDropZone = 0;
+int driveToDropZone = 1;
 int rotateToDropZone = 0;
 int driveAtDropZone = 0;
 int dispense = 0;
 int celebrate = 0;
 
 void setup() {
+	// driveTrain.forwards();
 	Serial.begin(9600);
 
 	// pin config for servos
@@ -137,9 +138,9 @@ void loop() {
   //Serial.println(uR.dist());
 
 	if (firstCelebration) {
-		delay(5000);
+		delay(2000);	// delete?
 		sendI2C(1);
-		delay(1000);
+		// delay(1000);	// delete?
     /*
 		while (!readI2C()) {
 			delay(100);
@@ -154,9 +155,9 @@ void loop() {
 
 	// orient outwards away from walls
 	else if (notOriented) {
-		delay(2000);
+		// delay(2000);	// delete?
 		notOriented = TestStartZone();
-		delay(1000);
+		// delay(1000);	// delete?
 		oriented = 1;
 		Serial.println("oriented");
 	}
@@ -187,8 +188,8 @@ void loop() {
 		driveTrain.forwards();
 		delay(1000);
 		firstTeeDetected = lineFollow.followLine();
-		driveTrain.stop();
-		delay(1000);
+		// driveTrain.stop();	// delete?
+		// delay(1000);		// delete?
 		secondTeeDetected = 1;
 		Serial.println("found second tee");
 	}
@@ -197,8 +198,8 @@ void loop() {
 	else if (secondTeeDetected) {
 		driveTrain.forwards();
 		delay(1000);
-		driveTrain.stop();
-		delay(1000);
+		// driveTrain.stop();	// delete?
+		// delay(1000);		// delete?
 		secondTeeDetected = 0;
 		findLine = 1;
 		Serial.println("crossed second tee");
@@ -208,10 +209,10 @@ void loop() {
 	else if (findLine) {
 		findLine = lineFollow.findLine(mode);
 		Serial.println("found line");
-		delay(1000);
+		// delay(1000);		// delete?
 		lineFollow.followLine();
-		driveTrain.stop();
-		delay(1000);
+		// driveTrain.stop();	// delete?
+		// delay(1000);		// delete?
 		touchTheButt = 1;
 		Serial.println("at contact zone");
 	}
@@ -225,7 +226,7 @@ void loop() {
 			delay(100);
 		}
     */
-		delay(2000);
+		// delay(2000);		// delete?e
 		touchTheButt = 0;
 		rotate90 = 1;
 		Serial.println("touche da butte");
@@ -240,7 +241,7 @@ void loop() {
 		else
 			driveTrain.rotate90Right();
 		driveTrain.backwards();
-		delay(3000);
+		delay(2000);	// 3000
 		driveTrain.stop();
 		rotate90 = 0;
 		findTeeBackwards = 1;
@@ -249,25 +250,25 @@ void loop() {
 	// do line following to find tee and become "oriented"
 	else if (findTeeBackwards) {
 		findTeeBackwards = lineFollow.followLine();
-		driveTrain.stop();
-		delay(1000);
+		// driveTrain.stop();	// delete?
+		// delay(1000);	// delete?
 		driveTrain.forwards();
 		delay(1000);
-		driveTrain.stop();
-		delay(1000);
+		// driveTrain.stop();	// delete?
+		// delay(1000);	// delete?
 		driveToDropZone = 1;
 	}
 
 	// drive straight along wall to drop zone
 	else if (driveToDropZone) {
 		lineFollow.followLine();
-		driveTrain.stop();
-		delay(1000);
+		// driveTrain.stop();	// delete?
+		// delay(1000);	// delete?
 		driveToDropZone = 0;
     	driveTrain.backwards();
-		delay(200);
+		delay(160);		// 200
     	driveTrain.stop();
-    	delay(1000);
+    	// delay(1000);	// delete?
 		rotateToDropZone = 1;
 	}
 
@@ -282,7 +283,7 @@ void loop() {
 					driveTrain.rotateRight();
 				} else {
 					driveTrain.stop();
-					delay(1000);
+					// delay(500);	// 1000
 					rotateToDropZone = 0;
 					driveAtDropZone = 1;
 				}
@@ -293,7 +294,7 @@ void loop() {
 					driveTrain.rotateLeft();
 				} else  {
 					driveTrain.stop();
-					delay(1000);
+					// delay(500);	// 1000
 					rotateToDropZone = 0;
 					driveAtDropZone = 1;
 				}
@@ -388,19 +389,19 @@ int TestStartZone() {
 			if (!findCorner) {
 				if (dist1 > farThresh && dist1 != 0 && dist1 <= crazyThresh) {
 					driveTrain.rotateLeft();
-					Serial.println("left!");
-          Serial.print("dist1: ");
-          Serial.println(dist1);
-          Serial.print("dist2: ");
-          Serial.println(dist2);
+		// 			Serial.println("left!");
+        //   Serial.print("dist1: ");
+        //   Serial.println(dist1);
+        //   Serial.print("dist2: ");
+        //   Serial.println(dist2);
 				}
 				else if (dist2 > farThresh && dist2 != 0 && dist2 <= crazyThresh) {
 					driveTrain.rotateLeft();
-					Serial.println("right");
-          Serial.print("dist1: ");
-          Serial.println(dist1);
-          Serial.print("dist2: ");
-          Serial.println(dist2);
+		// 			Serial.println("right");
+        //   Serial.print("dist1: ");
+        //   Serial.println(dist1);
+        //   Serial.print("dist2: ");
+        //   Serial.println(dist2);
 				}
 				else if (dist1 <= farThresh && dist2 <= farThresh && distF <= farThresh) {
 					driveTrain.rotateLeft();
